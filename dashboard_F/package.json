@@ -1,0 +1,33 @@
+{
+  "name": "dashboard",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "build": "echo 'Add build script here'"
+    
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@types/react-router-dom": "^5.3.3",
+    "express": "^5.1.0",
+    "framer-motion": "^12.23.12",
+    "lucide-react": "^0.534.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.7.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.9",
+    "@types/react-dom": "^19.1.7",
+    "nodemon": "^3.1.10",
+    "typescript": "^5.8.3"
+  }
+  
+}

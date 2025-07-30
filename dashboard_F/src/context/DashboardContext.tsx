@@ -1,0 +1,128 @@
+import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import { Product, User, DashboardStats } from '../types';
+
+interface DashboardState {
+  user: User | null;
+  products: Product[];
+  stats: DashboardStats;
+  isAuthenticated: boolean;
+}
+
+type DashboardAction =
+  | { type: 'SET_USER'; payload: User | null }
+  | { type: 'SET_PRODUCTS'; payload: Product[] }
+  | { type: 'ADD_PRODUCT'; payload: Product }
+  | { type: 'UPDATE_PRODUCT'; payload: Product }
+  | { type: 'DELETE_PRODUCT'; payload: string }
+  | { type: 'UPDATE_STATS'; payload: DashboardStats }
+  | { type: 'LOGOUT' };
+
+const initialState: DashboardState = {
+  user: null,
+  products: [],
+  stats: {
+    totalProducts: 0,
+    inStockProducts: 0,
+    outOfStockProducts: 0,
+    trendingProducts: 0
+  },
+  isAuthenticated: false
+};
+
+const DashboardContext = createContext<{
+  state: DashboardState;
+  dispatch: React.Dispatch<DashboardAction>;
+} | null>(null);
+
+function dashboardReducer(state: DashboardState, action: DashboardAction): DashboardState {
+  switch (action.type) {
+    case 'SET_USER':
+      return { 
+        ...state, 
+        user: action.payload,
+        isAuthenticated: !!action.payload
+      };
+    
+    case 'SET_PRODUCTS':
+      const products = action.payload;
+      const stats = {
+        totalProducts: products.length,
+        inStockProducts: products.filter(p => p.inStock).length,
+        outOfStockProducts: products.filter(p => !p.inStock).length,
+        trendingProducts: products.filter(p => p.trending).length
+      };
+      return { 
+        ...state, 
+        products,
+        stats
+      };
+    
+    case 'ADD_PRODUCT':
+      const newProducts = [...state.products, action.payload];
+      return {
+        ...state,
+        products: newProducts,
+        stats: {
+          totalProducts: newProducts.length,
+          inStockProducts: newProducts.filter(p => p.inStock).length,
+          outOfStockProducts: newProducts.filter(p => !p.inStock).length,
+          trendingProducts: newProducts.filter(p => p.trending).length
+        }
+      };
+    
+    case 'UPDATE_PRODUCT':
+      const updatedProducts = state.products.map(p => 
+        p.id === action.payload.id ? action.payload : p
+      );
+      return {
+        ...state,
+        products: updatedProducts,
+        stats: {
+          totalProducts: updatedProducts.length,
+          inStockProducts: updatedProducts.filter(p => p.inStock).length,
+          outOfStockProducts: updatedProducts.filter(p => !p.inStock).length,
+          trendingProducts: updatedProducts.filter(p => p.trending).length
+        }
+      };
+    
+    case 'DELETE_PRODUCT':
+      const filteredProducts = state.products.filter(p => p.id !== action.payload);
+      return {
+        ...state,
+        products: filteredProducts,
+        stats: {
+          totalProducts: filteredProducts.length,
+          inStockProducts: filteredProducts.filter(p => p.inStock).length,
+          outOfStockProducts: filteredProducts.filter(p => !p.inStock).length,
+          trendingProducts: filteredProducts.filter(p => p.trending).length
+        }
+      };
+    
+    case 'UPDATE_STATS':
+      return { ...state, stats: action.payload };
+    
+    case 'LOGOUT':
+      return initialState;
+    
+    default:
+      return state;
+  }
+}
+
+export function DashboardProvider({ children }: { children: ReactNode }) {
+  const [state, dispatch] = useReducer(dashboardReducer, initialState);
+
+  return (
+    <DashboardContext.Provider value={{ state, dispatch }}>
+      {children}
+    </DashboardContext.Provider>
+  );
+}
+
+export function useDashboard() {
+  const context = useContext(DashboardContext);
+  if (!context) {
+    throw new Error('useDashboard must be used within DashboardProvider');
+  }
+  return context;
+}
