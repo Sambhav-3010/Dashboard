@@ -93,29 +93,48 @@ export default function AddProductForm({ editProduct, onCancel }: AddProductForm
     setValue("sizes", updatedSizes)
   }
 
-  const onSubmit = (data: ProductFormData) => {
-    const product: Product = {
-      id: editProduct?.id || Date.now().toString(),
-      ...data,
-      images,
-      createdAt: editProduct?.createdAt || new Date(),
-      updatedAt: new Date(),
-    }
-
-    if (editProduct) {
-      dispatch({ type: "UPDATE_PRODUCT", payload: product })
+  const onSubmit = async (data: ProductFormData) => {
+  const formData = new FormData();
+  Object.entries(data).forEach(([key, value]) => {
+    if (key === "sizes") {
+      (value as string[]).forEach((v) => formData.append("sizes[]", v));
     } else {
-      dispatch({ type: "ADD_PRODUCT", payload: product })
+      formData.append(key, value as string);
     }
+  });
+
+  imageFiles.forEach((file) => {
+    formData.append("images", file);
+  });
+
+  try {
+    const res = await fetch(
+      editProduct ? `http://your-vps-ip:5000/products/${editProduct.id}` : `http://your-vps-ip:5000/products`,
+      {
+        method: editProduct ? "PUT" : "POST",
+        body: formData,
+      }
+    );
+
+    if (!res.ok) throw new Error("Failed to save product");
+
+    const savedProduct = await res.json();
+    dispatch({ type: editProduct ? "UPDATE_PRODUCT" : "ADD_PRODUCT", payload: savedProduct });
 
     if (!editProduct) {
-      reset()
-      setImages([])
-      setSizes([])
+      reset();
+      setImages([]);
+      setImageFiles([]);
+      setSizes([]);
     }
 
-    if (onCancel) onCancel()
+    if (onCancel) onCancel();
+  } catch (err) {
+    console.error("Error saving product:", err);
+    alert("Something went wrong while saving the product.");
   }
+};
+
 
   return (
     <motion.div
