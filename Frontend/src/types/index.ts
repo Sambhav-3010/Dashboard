@@ -18,7 +18,7 @@ export interface User {
   id: string
   name: string
   email: string
-  role: "seller"
+  role: "seller" | "admin"
 }
 
 export interface DashboardStats {

@@ -4,6 +4,7 @@ import Login from "./components/Login"
 import Dashboard from "./components/Dashboard"
 import AddProductForm from "./components/AddProductForm"
 import InventoryManagement from "./components/InventoryManagement"
+import { getAuthFromStorage, saveAuthToStorage, clearAuthFromStorage } from "./utils/auth"
 import type { Product, User, DashboardStats } from "./types"
 
 interface AppState {
@@ -29,6 +30,20 @@ const initialState: AppState = {
 
 function App() {
   const [state, setState] = useState<AppState>(initialState)
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Check for existing authentication on app load
+  useEffect(() => {
+    const savedUser = getAuthFromStorage()
+    if (savedUser) {
+      setState(prev => ({
+        ...prev,
+        user: savedUser,
+        isAuthenticated: true,
+      }))
+    }
+    setIsLoading(false)
+  }, [])
 
   // Fetch products from backend
   useEffect(() => {
@@ -45,6 +60,12 @@ function App() {
   }, [state.isAuthenticated])
 
   const setUser = (user: User | null) => {
+    if (user) {
+      saveAuthToStorage(user)
+    } else {
+      clearAuthFromStorage()
+    }
+    
     setState(prev => ({
       ...prev,
       user,
@@ -86,7 +107,20 @@ function App() {
   }
 
   const logout = () => {
+    clearAuthFromStorage()
     setState(initialState)
+  }
+
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
   }
 
   if (!state.isAuthenticated) {

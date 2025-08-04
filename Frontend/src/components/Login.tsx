@@ -1,4 +1,3 @@
-
 import type React from "react"
 import { useState } from "react"
 import { motion } from "framer-motion"
@@ -145,9 +144,9 @@ export default function Login({ onLogin }: LoginProps) {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.6 }}
         >
-          <p className="text-sm font-medium text-amber-800 mb-2">Demo Credentials:</p>
-          <p className="text-xs text-amber-700">Email: admin@naareecollections.com</p>
-          <p className="text-xs text-amber-700">Password: admin123</p>
+          <p className="text-sm font-medium text-amber-800 mb-2">Admin Credentials:</p>
+          <p className="text-xs text-amber-700">Email: ankita.mahajan@naareecollections.com</p>
+          <p className="text-xs text-amber-700">Password: Naaree@123</p>
         </motion.div>
       </motion.div>
     </div>
