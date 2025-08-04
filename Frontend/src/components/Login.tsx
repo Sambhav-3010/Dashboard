@@ -137,17 +137,6 @@ export default function Login({ onLogin }: LoginProps) {
             {isLoading ? "Signing In..." : "Sign In"}
           </motion.button>
         </form>
-
-        <motion.div
-          className="mt-8 p-4 bg-amber-50 rounded-lg border border-amber-200"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-        >
-          <p className="text-sm font-medium text-amber-800 mb-2">Admin Credentials:</p>
-          <p className="text-xs text-amber-700">Email: ankita.mahajan@naareecollections.com</p>
-          <p className="text-xs text-amber-700">Password: Naaree@123</p>
-        </motion.div>
       </motion.div>
     </div>
   )
