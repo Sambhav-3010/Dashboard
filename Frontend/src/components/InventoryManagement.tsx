@@ -2,19 +2,24 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { Edit, Trash2, Eye, Search, X } from "lucide-react"
-import { useDashboard } from "../context/DashboardContext"
 import type { Product } from "../types"
 import AddProductForm from "./AddProductForm"
 
-export default function InventoryManagement() {
-  const { state, dispatch } = useDashboard()
+interface InventoryManagementProps {
+  products: Product[]
+  onProductUpdate: (product: Product) => void
+  onProductDelete: (productId: string) => void
+  onViewChange: (view: "dashboard" | "add-product" | "inventory") => void
+}
+
+export default function InventoryManagement({ products, onProductUpdate, onProductDelete, onViewChange }: InventoryManagementProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [filterType, setFilterType] = useState<string>("all")
   const [filterAvailability, setFilterAvailability] = useState<string>("all")
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [viewingProduct, setViewingProduct] = useState<Product | null>(null)
 
-  const filteredProducts = state.products.filter((product) => {
+  const filteredProducts = products.filter((product) => {
     const matchesSearch =
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.fabricType.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -28,12 +33,24 @@ export default function InventoryManagement() {
 
   const handleDelete = (productId: string) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
-      dispatch({ type: "DELETE_PRODUCT", payload: productId })
+      onProductDelete(productId)
     }
   }
 
+  const handleProductUpdate = (product: Product) => {
+    onProductUpdate(product)
+    setEditingProduct(null)
+  }
+
   if (editingProduct) {
-    return <AddProductForm editProduct={editingProduct} onCancel={() => setEditingProduct(null)} />
+    return (
+      <AddProductForm 
+        editProduct={editingProduct} 
+        onCancel={() => setEditingProduct(null)}
+        onProductAdded={handleProductUpdate}
+        onViewChange={onViewChange}
+      />
+    )
   }
 
   return (
@@ -45,7 +62,7 @@ export default function InventoryManagement() {
     >
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-gray-900">Inventory Management</h2>
-        <div className="text-sm text-gray-600">Total Products: {state.products.length}</div>
+        <div className="text-sm text-gray-600">Total Products: {products.length}</div>
       </div>
 
       {/* Filters */}

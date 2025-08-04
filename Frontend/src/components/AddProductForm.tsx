@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Upload, X, Plus, Save } from "lucide-react"
-import { useDashboard } from "../context/DashboardContext"
 import type { Product } from "../types"
 
 const productSchema = z.object({
@@ -26,10 +25,11 @@ type ProductFormData = z.infer<typeof productSchema>
 interface AddProductFormProps {
   editProduct?: Product
   onCancel?: () => void
+  onProductAdded: (product: Product) => void
+  onViewChange: (view: "dashboard" | "add-product" | "inventory") => void
 }
 
-export default function AddProductForm({ editProduct, onCancel }: AddProductFormProps) {
-  const { dispatch } = useDashboard()
+export default function AddProductForm({ editProduct, onCancel, onProductAdded, onViewChange }: AddProductFormProps) {
   const [images, setImages] = useState<string[]>(editProduct?.images || [])
   const [sizes, setSizes] = useState<string[]>(editProduct?.sizes || [])
   const [newSize, setNewSize] = useState("")
@@ -93,39 +93,21 @@ export default function AddProductForm({ editProduct, onCancel }: AddProductForm
     setValue("sizes", updatedSizes)
   }
 
-  const onSubmit = async (data: ProductFormData) => {
-  const formData = new FormData();
-  Object.entries(data).forEach(([key, value]) => {
-    if (key === "sizes") {
-      (value as string[]).forEach((v) => formData.append("sizes[]", v));
-    } else {
-      formData.append(key, value as string);
+  const onSubmit = (data: ProductFormData) => {
+    const product: Product = {
+      id: editProduct?.id || Date.now().toString(),
+      ...data,
+      images,
+      createdAt: editProduct?.createdAt || new Date(),
+      updatedAt: new Date(),
     }
-  });
 
-  imageFiles.forEach((file) => {
-    formData.append("images", file);
-  });
-
-  try {
-    const res = await fetch(
-      editProduct ? `http://your-vps-ip:5000/products/${editProduct.id}` : `http://your-vps-ip:5000/products`,
-      {
-        method: editProduct ? "PUT" : "POST",
-        body: formData,
-      }
-    );
-
-    if (!res.ok) throw new Error("Failed to save product");
-
-    const savedProduct = await res.json();
-    dispatch({ type: editProduct ? "UPDATE_PRODUCT" : "ADD_PRODUCT", payload: savedProduct });
+    onProductAdded(product)
 
     if (!editProduct) {
-      reset();
-      setImages([]);
-      setImageFiles([]);
-      setSizes([]);
+      reset()
+      setImages([])
+      setSizes([])
     }
 
     if (onCancel) onCancel();
