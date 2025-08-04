@@ -93,12 +93,12 @@ function App() {
   }
 
   const updateProduct = (product: Product) => {
-    const updatedProducts = state.products.map((p) => (p.id === product.id ? product : p))
+    const updatedProducts = state.products.map((p) => (p._id === product._id ? product : p))
     setProducts(updatedProducts)
   }
 
   const deleteProduct = (productId: string) => {
-    const filteredProducts = state.products.filter((p) => p.id !== productId)
+    const filteredProducts = state.products.filter((p) => p._id !== productId)
     setProducts(filteredProducts)
   }
 
