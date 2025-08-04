@@ -1,11 +1,11 @@
-import type React from "react"
-import { useState } from "react"
-import { motion } from "framer-motion"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
-import { Upload, X, Plus, Save } from "lucide-react"
-import type { Product } from "../types"
+import type React from "react";
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Upload, X, Plus, Save } from "lucide-react";
+import type { Product } from "../types";
 
 const productSchema = z.object({
   name: z.string().min(1, "Product name is required"),
@@ -16,22 +16,29 @@ const productSchema = z.object({
   sizes: z.array(z.string()).min(1, "At least one size is required"),
   availability: z.enum(["In Stock", "Out of Stock", "Limited"]),
   productType: z.enum(["saree", "suits", "boutique-fabrics", "accessories"]),
-  shortDescription: z.string().min(10, "Description must be at least 10 characters"),
-})
+  shortDescription: z
+    .string()
+    .min(10, "Description must be at least 10 characters"),
+});
 
-type ProductFormData = z.infer<typeof productSchema>
+type ProductFormData = z.infer<typeof productSchema>;
 
 interface AddProductFormProps {
-  editProduct?: Product
-  onCancel?: () => void
-  onProductAdded: (product: Product) => void
-  onViewChange: (view: "dashboard" | "add-product" | "inventory") => void
+  editProduct?: Product;
+  onCancel?: () => void;
+  onProductAdded: (product: Product) => void;
+  onViewChange: (view: "dashboard" | "add-product" | "inventory") => void;
 }
 
-export default function AddProductForm({ editProduct, onCancel, onProductAdded, onViewChange }: AddProductFormProps) {
-  const [images, setImages] = useState<string[]>(editProduct?.images || [])
-  const [sizes, setSizes] = useState<string[]>(editProduct?.sizes || [])
-  const [newSize, setNewSize] = useState("")
+export default function AddProductForm({
+  editProduct,
+  onCancel,
+  onProductAdded,
+  onViewChange,
+}: AddProductFormProps) {
+  const [images, setImages] = useState<string[]>(editProduct?.images || []);
+  const [sizes, setSizes] = useState<string[]>(editProduct?.sizes || []);
+  const [newSize, setNewSize] = useState("");
 
   const {
     register,
@@ -54,64 +61,99 @@ export default function AddProductForm({ editProduct, onCancel, onProductAdded, 
           shortDescription: editProduct.shortDescription,
         }
       : undefined,
-  })
+  });
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
+    const files = Array.from(e.target.files || []);
     if (images.length + files.length > 4) {
-      alert("Maximum 4 images allowed")
-      return
+      alert("Maximum 4 images allowed");
+      return;
     }
 
     files.forEach((file) => {
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onload = (e) => {
-        const result = e.target?.result as string
-        setImages((prev) => [...prev, result])
-      }
-      reader.readAsDataURL(file)
-    })
-  }
+        const result = e.target?.result as string;
+        setImages((prev) => [...prev, result]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
 
   const removeImage = (index: number) => {
-    setImages((prev) => prev.filter((_, i) => i !== index))
-  }
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const addSize = () => {
     if (newSize.trim() && !sizes.includes(newSize.trim())) {
-      const updatedSizes = [...sizes, newSize.trim()]
-      setSizes(updatedSizes)
-      setValue("sizes", updatedSizes)
-      setNewSize("")
+      const updatedSizes = [...sizes, newSize.trim()];
+      setSizes(updatedSizes);
+      setValue("sizes", updatedSizes);
+      setNewSize("");
     }
-  }
+  };
 
   const removeSize = (size: string) => {
-    const updatedSizes = sizes.filter((s) => s !== size)
-    setSizes(updatedSizes)
-    setValue("sizes", updatedSizes)
-  }
+    const updatedSizes = sizes.filter((s) => s !== size);
+    setSizes(updatedSizes);
+    setValue("sizes", updatedSizes);
+  };
 
-  const onSubmit = (data: ProductFormData) => {
-    const product: Product = {
-      id: editProduct?.id || Date.now().toString(),
-      ...data,
-      images,
-      createdAt: editProduct?.createdAt || new Date(),
-      updatedAt: new Date(),
+  const onSubmit = async (data: ProductFormData) => {
+    try {
+      const formData = new FormData();
+
+      // Append basic fields
+      Object.entries(data).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          value.forEach((v) => formData.append(key, v));
+        } else {
+          formData.append(key, value as string);
+        }
+      });
+
+      // Append images
+      for (let i = 0; i < images.length; i++) {
+        const image = images[i];
+
+        // Convert base64 to Blob
+        const res = await fetch(image);
+        const blob = await res.blob();
+        const filename = `image_${Date.now()}_${i}.png`;
+        const file = new File([blob], filename, { type: blob.type });
+
+        formData.append("images", file);
+      }
+
+      const method = editProduct ? "PUT" : "POST";
+      const url = editProduct
+        ? `http://localhost:5000/products/${editProduct.id}`
+        : `http://localhost:5000/products`;
+
+      const response = await fetch(url, {
+        method,
+        body: formData,
+      });
+      console.log("Response status:", response.status);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Something went wrong");
+      }
+
+      const savedProduct = await response.json();
+      onProductAdded(savedProduct);
+      if (!editProduct) {
+        reset();
+        setImages([]);
+        setSizes([]);
+        onViewChange("dashboard");
+      }
+      if (onCancel) onCancel();
+    } catch (err: any) {
+      console.error("Product submission failed:", err);
+      alert(err.message || "Failed to save product.");
     }
-
-    onProductAdded(product)
-
-    if (!editProduct) {
-      reset()
-      setImages([])
-      setSizes([])
-      onViewChange("dashboard")
-    }
-
-    if (onCancel) onCancel()
-  }
+  };
 
   return (
     <motion.div
@@ -121,9 +163,14 @@ export default function AddProductForm({ editProduct, onCancel, onProductAdded, 
       transition={{ duration: 0.6 }}
     >
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">{editProduct ? "Edit Product" : "Add New Product"}</h2>
+        <h2 className="text-2xl font-bold text-gray-900">
+          {editProduct ? "Edit Product" : "Add New Product"}
+        </h2>
         {onCancel && (
-          <button onClick={onCancel} className="text-gray-500 hover:text-gray-700">
+          <button
+            onClick={onCancel}
+            className="text-gray-500 hover:text-gray-700"
+          >
             <X className="h-6 w-6" />
           </button>
         )}
@@ -133,54 +180,76 @@ export default function AddProductForm({ editProduct, onCancel, onProductAdded, 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Product Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Product Name *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Product Name *
+            </label>
             <input
               {...register("name")}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
               placeholder="Enter product name"
             />
-            {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>}
+            {errors.name && (
+              <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+            )}
           </div>
 
           {/* Fabric Type */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Fabric Type *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Fabric Type *
+            </label>
             <input
               {...register("fabricType")}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
               placeholder="e.g., Silk, Cotton, Georgette"
             />
-            {errors.fabricType && <p className="text-red-500 text-sm mt-1">{errors.fabricType.message}</p>}
+            {errors.fabricType && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.fabricType.message}
+              </p>
+            )}
           </div>
 
           {/* Regional Varieties */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Regional Varieties *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Regional Varieties *
+            </label>
             <input
               {...register("regionalVarieties")}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
               placeholder="e.g., Banarasi, Kanjivaram, Chanderi"
             />
             {errors.regionalVarieties && (
-              <p className="text-red-500 text-sm mt-1">{errors.regionalVarieties.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.regionalVarieties.message}
+              </p>
             )}
           </div>
 
           {/* Price */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Price (₹) *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Price (₹) *
+            </label>
             <input
               {...register("price", { valueAsNumber: true })}
               type="number"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
               placeholder="Enter price"
             />
-            {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price.message}</p>}
+            {errors.price && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.price.message}
+              </p>
+            )}
           </div>
 
           {/* Discounts */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Discounts (%) *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Discounts (%) *
+            </label>
             <input
               {...register("discounts", { valueAsNumber: true })}
               type="number"
@@ -189,12 +258,18 @@ export default function AddProductForm({ editProduct, onCancel, onProductAdded, 
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
               placeholder="Enter discount percentage"
             />
-            {errors.discounts && <p className="text-red-500 text-sm mt-1">{errors.discounts.message}</p>}
+            {errors.discounts && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.discounts.message}
+              </p>
+            )}
           </div>
 
           {/* Availability */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Availability *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Availability *
+            </label>
             <select
               {...register("availability")}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
@@ -204,12 +279,18 @@ export default function AddProductForm({ editProduct, onCancel, onProductAdded, 
               <option value="Out of Stock">Out of Stock</option>
               <option value="Limited">Limited</option>
             </select>
-            {errors.availability && <p className="text-red-500 text-sm mt-1">{errors.availability.message}</p>}
+            {errors.availability && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.availability.message}
+              </p>
+            )}
           </div>
 
           {/* Product Type */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Product Type *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Product Type *
+            </label>
             <select
               {...register("productType")}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
@@ -220,13 +301,19 @@ export default function AddProductForm({ editProduct, onCancel, onProductAdded, 
               <option value="boutique-fabrics">Boutique Fabrics</option>
               <option value="accessories">Accessories</option>
             </select>
-            {errors.productType && <p className="text-red-500 text-sm mt-1">{errors.productType.message}</p>}
+            {errors.productType && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.productType.message}
+              </p>
+            )}
           </div>
         </div>
 
         {/* Sizes */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Sizes *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Sizes *
+          </label>
           <div className="flex flex-wrap gap-2 mb-3">
             {sizes.map((size) => (
               <span
@@ -250,7 +337,9 @@ export default function AddProductForm({ editProduct, onCancel, onProductAdded, 
               onChange={(e) => setNewSize(e.target.value)}
               className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
               placeholder="Add size (e.g., S, M, L, XL, Free Size)"
-              onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addSize())}
+              onKeyPress={(e) =>
+                e.key === "Enter" && (e.preventDefault(), addSize())
+              }
             />
             <button
               type="button"
@@ -260,24 +349,34 @@ export default function AddProductForm({ editProduct, onCancel, onProductAdded, 
               <Plus className="h-4 w-4" />
             </button>
           </div>
-          {errors.sizes && <p className="text-red-500 text-sm mt-1">{errors.sizes.message}</p>}
+          {errors.sizes && (
+            <p className="text-red-500 text-sm mt-1">{errors.sizes.message}</p>
+          )}
         </div>
 
         {/* Short Description */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Short Description *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Short Description *
+          </label>
           <textarea
             {...register("shortDescription")}
             rows={4}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
             placeholder="Enter product description"
           />
-          {errors.shortDescription && <p className="text-red-500 text-sm mt-1">{errors.shortDescription.message}</p>}
+          {errors.shortDescription && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.shortDescription.message}
+            </p>
+          )}
         </div>
 
         {/* Image Upload */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Product Images (Max 4)</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Product Images (Max 4)
+          </label>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             {images.map((image, index) => (
               <div key={index} className="relative">
@@ -299,7 +398,13 @@ export default function AddProductForm({ editProduct, onCancel, onProductAdded, 
               <label className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-amber-500 transition-colors">
                 <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                 <p className="text-sm text-gray-600">Upload Image</p>
-                <input type="file" multiple accept="image/*" onChange={handleImageUpload} className="hidden" />
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
               </label>
             )}
           </div>
@@ -318,6 +423,7 @@ export default function AddProductForm({ editProduct, onCancel, onProductAdded, 
           )}
           <motion.button
             type="submit"
+            onSubmit={handleSubmit(onSubmit)}
             className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-lg hover:from-amber-600 hover:to-amber-700 transition-all duration-200"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -328,5 +434,5 @@ export default function AddProductForm({ editProduct, onCancel, onProductAdded, 
         </div>
       </form>
     </motion.div>
-  )
+  );
 }

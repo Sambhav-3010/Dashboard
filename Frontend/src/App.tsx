@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Header from "./components/Header"
 import Login from "./components/Login"
 import Dashboard from "./components/Dashboard"
@@ -30,7 +30,20 @@ const initialState: AppState = {
 function App() {
   const [state, setState] = useState<AppState>(initialState)
 
-  // Helper functions to update state
+  // Fetch products from backend
+  useEffect(() => {
+    if (state.isAuthenticated) {
+      fetch("http://localhost:5000/products")
+        .then((res) => res.json())
+        .then((data: Product[]) => {
+          setProducts(data)
+        })
+        .catch((err) => {
+          console.error("Failed to fetch products", err)
+        })
+    }
+  }, [state.isAuthenticated])
+
   const setUser = (user: User | null) => {
     setState(prev => ({
       ...prev,
@@ -77,11 +90,7 @@ function App() {
   }
 
   if (!state.isAuthenticated) {
-    return (
-      <Login 
-        onLogin={setUser}
-      />
-    )
+    return <Login onLogin={setUser} />
   }
 
   const renderCurrentView = () => {

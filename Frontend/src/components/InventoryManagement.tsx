@@ -128,7 +128,7 @@ export default function InventoryManagement({ products, onProductUpdate, onProdu
                   <div className="flex items-center space-x-3">
                     {product.images[0] && (
                       <img
-                        src={product.images[0] || "/placeholder.svg"}
+                        src={`http://localhost:5000/${product.images[0]}` || "/placeholder.svg"}
                         alt={product.name}
                         className="h-12 w-12 rounded-lg object-cover"
                       />
