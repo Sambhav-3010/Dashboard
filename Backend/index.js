@@ -10,7 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors({
-  origin: "*",
+  origin: [process.env.FRONTEND_URL , process.env.BACKEND_URL, process.env.DEPLOY_URL],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true,
 }));

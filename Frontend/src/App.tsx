@@ -33,7 +33,7 @@ function App() {
   // Fetch products from backend
   useEffect(() => {
     if (state.isAuthenticated) {
-      fetch("http://localhost:5000/products")
+      fetch(`${import.meta.env.VITE_API_URL}/products`)
         .then((res) => res.json())
         .then((data: Product[]) => {
           setProducts(data)

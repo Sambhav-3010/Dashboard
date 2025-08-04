@@ -128,7 +128,7 @@ export default function InventoryManagement({ products, onProductUpdate, onProdu
                   <div className="flex items-center space-x-3">
                     {product.images[0] && (
                       <img
-                        src={`http://localhost:5000/${product.images[0]}` || "/placeholder.svg"}
+                        src={`${import.meta.env.VITE_API_URL}${product.images[0]}` || "/placeholder.svg"}
                         alt={product.name}
                         className="h-12 w-12 rounded-lg object-cover"
                       />
@@ -212,7 +212,7 @@ export default function InventoryManagement({ products, onProductUpdate, onProdu
                   {viewingProduct.images.map((image, index) => (
                     <img
                       key={index}
-                      src={image || "/placeholder.svg"}
+                      src={`${import.meta.env.VITE_API_URL}${image}` || "/placeholder.svg"}
                       alt={`${viewingProduct.name} ${index + 1}`}
                       className="w-full h-32 object-cover rounded-lg"
                     />

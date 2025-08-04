@@ -127,8 +127,8 @@ export default function AddProductForm({
 
       const method = editProduct ? "PUT" : "POST";
       const url = editProduct
-        ? `http://localhost:5000/products/${editProduct.id}`
-        : `http://localhost:5000/products`;
+        ? `${import.meta.env.VITE_API_URL}/products/${editProduct.id}`
+        : `${import.meta.env.VITE_API_URL}/products`;
 
       const response = await fetch(url, {
         method,
