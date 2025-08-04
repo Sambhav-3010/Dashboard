@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Upload, X, Plus, Save } from "lucide-react"
-import { useDashboard } from "../context/DashboardContext"
 import type { Product } from "../types"
 
 const productSchema = z.object({
@@ -26,10 +25,11 @@ type ProductFormData = z.infer<typeof productSchema>
 interface AddProductFormProps {
   editProduct?: Product
   onCancel?: () => void
+  onProductAdded: (product: Product) => void
+  onViewChange: (view: "dashboard" | "add-product" | "inventory") => void
 }
 
-export default function AddProductForm({ editProduct, onCancel }: AddProductFormProps) {
-  const { dispatch } = useDashboard()
+export default function AddProductForm({ editProduct, onCancel, onProductAdded, onViewChange }: AddProductFormProps) {
   const [images, setImages] = useState<string[]>(editProduct?.images || [])
   const [sizes, setSizes] = useState<string[]>(editProduct?.sizes || [])
   const [newSize, setNewSize] = useState("")
@@ -102,16 +102,13 @@ export default function AddProductForm({ editProduct, onCancel }: AddProductForm
       updatedAt: new Date(),
     }
 
-    if (editProduct) {
-      dispatch({ type: "UPDATE_PRODUCT", payload: product })
-    } else {
-      dispatch({ type: "ADD_PRODUCT", payload: product })
-    }
+    onProductAdded(product)
 
     if (!editProduct) {
       reset()
       setImages([])
       setSizes([])
+      onViewChange("dashboard")
     }
 
     if (onCancel) onCancel()

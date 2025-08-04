@@ -1,34 +1,38 @@
 
 import { motion } from "framer-motion"
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from "lucide-react"
-import { useDashboard } from "../context/DashboardContext"
 import StatsCard from "./StatsCard"
+import type { DashboardStats, User } from "../types"
 
-export default function Dashboard() {
-  const { state, dispatch } = useDashboard()
+interface DashboardProps {
+  stats: DashboardStats
+  user?: User | null
+  onViewChange: (view: "dashboard" | "add-product" | "inventory") => void
+}
 
+export default function Dashboard({ stats, user, onViewChange }: DashboardProps) {
   const statsData = [
     {
       title: "Total Products",
-      value: state.stats.totalProducts,
+      value: stats.totalProducts,
       icon: Package,
       color: "bg-blue-500",
     },
     {
       title: "In Stock",
-      value: state.stats.inStockProducts,
+      value: stats.inStockProducts,
       icon: CheckCircle,
       color: "bg-green-500",
     },
     {
       title: "Out of Stock",
-      value: state.stats.outOfStockProducts,
+      value: stats.outOfStockProducts,
       icon: AlertTriangle,
       color: "bg-red-500",
     },
     {
       title: "Limited Stock",
-      value: state.stats.limitedStockProducts,
+      value: stats.limitedStockProducts,
       icon: TrendingUp,
       color: "bg-amber-500",
     },
@@ -43,7 +47,7 @@ export default function Dashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, {state.user?.name}!</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, {user?.name}!</h1>
           <p className="text-gray-600">Here's an overview of your product inventory</p>
         </motion.div>
 
@@ -69,7 +73,7 @@ export default function Dashboard() {
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <motion.button
-              onClick={() => dispatch({ type: "SET_VIEW", payload: "add-product" })}
+              onClick={() => onViewChange("add-product")}
               className="p-4 border-2 border-dashed border-amber-300 rounded-lg hover:border-amber-500 hover:bg-amber-50 transition-all duration-200 text-center"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -80,7 +84,7 @@ export default function Dashboard() {
             </motion.button>
 
             <motion.button
-              onClick={() => dispatch({ type: "SET_VIEW", payload: "inventory" })}
+              onClick={() => onViewChange("inventory")}
               className="p-4 border-2 border-dashed border-blue-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 text-center"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
