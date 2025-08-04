@@ -1,4 +1,3 @@
-
 import type React from "react"
 import { useState } from "react"
 import { motion } from "framer-motion"
@@ -108,15 +107,11 @@ export default function AddProductForm({ editProduct, onCancel, onProductAdded, 
       reset()
       setImages([])
       setSizes([])
+      onViewChange("dashboard")
     }
 
-    if (onCancel) onCancel();
-  } catch (err) {
-    console.error("Error saving product:", err);
-    alert("Something went wrong while saving the product.");
+    if (onCancel) onCancel()
   }
-};
-
 
   return (
     <motion.div
