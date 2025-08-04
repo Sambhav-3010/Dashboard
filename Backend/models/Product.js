@@ -17,6 +17,11 @@ const productSchema = new mongoose.Schema({
   },
   shortDescription: String,
   images: [String],
+  quantity: {
+    type: Number,
+    default: 1,
+    min: [0, "Quantity must be a positive number"],
+  },
 }, { timestamps: true });
 
 module.exports = mongoose.model("Product", productSchema);

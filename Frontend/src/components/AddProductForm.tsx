@@ -19,6 +19,7 @@ const productSchema = z.object({
   shortDescription: z
     .string()
     .min(10, "Description must be at least 10 characters"),
+  quantity: z.number().min(1, "Quantity must be a positive number"),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
@@ -59,6 +60,7 @@ export default function AddProductForm({
           availability: editProduct.availability,
           productType: editProduct.productType,
           shortDescription: editProduct.shortDescription,
+          quantity: editProduct.quantity || 1,
         }
       : undefined,
   });
@@ -102,8 +104,6 @@ export default function AddProductForm({
   const onSubmit = async (data: ProductFormData) => {
     try {
       const formData = new FormData();
-
-      // Append basic fields
       Object.entries(data).forEach(([key, value]) => {
         if (Array.isArray(value)) {
           value.forEach((v) => formData.append(key, v));
@@ -112,11 +112,8 @@ export default function AddProductForm({
         }
       });
 
-      // Append images
       for (let i = 0; i < images.length; i++) {
         const image = images[i];
-
-        // Convert base64 to Blob
         const res = await fetch(image);
         const blob = await res.blob();
         const filename = `image_${Date.now()}_${i}.png`;
@@ -127,7 +124,7 @@ export default function AddProductForm({
 
       const method = editProduct ? "PUT" : "POST";
       const url = editProduct
-        ? `${import.meta.env.VITE_API_URL}/products/${editProduct.id}`
+        ? `${import.meta.env.VITE_API_URL}/products/${editProduct._id}`
         : `${import.meta.env.VITE_API_URL}/products`;
 
       const response = await fetch(url, {
@@ -265,6 +262,28 @@ export default function AddProductForm({
             )}
           </div>
 
+          {/* Product Type */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Product Type *
+            </label>
+            <select
+              {...register("productType")}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+            >
+              <option value="">Select product type</option>
+              <option value="saree">Saree</option>
+              <option value="suits">Suits</option>
+              <option value="boutique-fabrics">Boutique Fabrics</option>
+              <option value="accessories">Accessories</option>
+            </select>
+            {errors.productType && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.productType.message}
+              </p>
+            )}
+          </div>
+
           {/* Availability */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -285,25 +304,21 @@ export default function AddProductForm({
               </p>
             )}
           </div>
-
-          {/* Product Type */}
+          {/* Quantity */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Product Type *
+              Quantity *
             </label>
-            <select
-              {...register("productType")}
+            <input
+              {...register("quantity", { valueAsNumber: true })}
+              type="number"
+              min="1"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
-            >
-              <option value="">Select product type</option>
-              <option value="saree">Saree</option>
-              <option value="suits">Suits</option>
-              <option value="boutique-fabrics">Boutique Fabrics</option>
-              <option value="accessories">Accessories</option>
-            </select>
-            {errors.productType && (
+              placeholder="Enter quantity"
+            />
+            {errors.quantity && (
               <p className="text-red-500 text-sm mt-1">
-                {errors.productType.message}
+                {errors.quantity.message}
               </p>
             )}
           </div>

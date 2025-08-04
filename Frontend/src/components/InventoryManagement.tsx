@@ -1,56 +1,84 @@
-
-import { useState } from "react"
-import { motion } from "framer-motion"
-import { Edit, Trash2, Eye, Search, X } from "lucide-react"
-import type { Product } from "../types"
-import AddProductForm from "./AddProductForm"
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Edit, Trash2, Eye, Search, X } from "lucide-react";
+import type { Product } from "../types";
+import AddProductForm from "./AddProductForm";
 
 interface InventoryManagementProps {
-  products: Product[]
-  onProductUpdate: (product: Product) => void
-  onProductDelete: (productId: string) => void
-  onViewChange: (view: "dashboard" | "add-product" | "inventory") => void
+  products: Product[];
+  onProductUpdate: (product: Product) => void;
+  onProductDelete: (productId: string) => void;
+  onViewChange: (view: "dashboard" | "add-product" | "inventory") => void;
 }
 
-export default function InventoryManagement({ products, onProductUpdate, onProductDelete, onViewChange }: InventoryManagementProps) {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [filterType, setFilterType] = useState<string>("all")
-  const [filterAvailability, setFilterAvailability] = useState<string>("all")
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
-  const [viewingProduct, setViewingProduct] = useState<Product | null>(null)
+export default function InventoryManagement({
+  products,
+  onProductUpdate,
+  onProductDelete,
+  onViewChange,
+}: InventoryManagementProps) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState<string>("all");
+  const [filterAvailability, setFilterAvailability] = useState<string>("all");
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch =
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.fabricType.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.regionalVarieties.toLowerCase().includes(searchTerm.toLowerCase())
+      product.regionalVarieties
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
 
-    const matchesType = filterType === "all" || product.productType === filterType
-    const matchesAvailability = filterAvailability === "all" || product.availability === filterAvailability
+    const matchesType =
+      filterType === "all" || product.productType === filterType;
+    const matchesAvailability =
+      filterAvailability === "all" ||
+      product.availability === filterAvailability;
 
-    return matchesSearch && matchesType && matchesAvailability
-  })
+    return matchesSearch && matchesType && matchesAvailability;
+  });
 
-  const handleDelete = (productId: string) => {
+  const handleDelete = async (productId: string) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
-      onProductDelete(productId)
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/products/${productId}`,
+          {
+            method: "DELETE",
+            credentials: "include",
+          }
+        );
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Failed to delete product");
+        }
+
+        onProductDelete(productId);
+        alert("Product deleted successfully");
+        window.location.reload();
+      } catch (err: any) {
+        alert("Error deleting product: " + err.message);
+      }
     }
-  }
+  };
 
   const handleProductUpdate = (product: Product) => {
-    onProductUpdate(product)
-    setEditingProduct(null)
-  }
+    onProductUpdate(product);
+    setEditingProduct(null);
+  };
 
   if (editingProduct) {
     return (
-      <AddProductForm 
-        editProduct={editingProduct} 
+      <AddProductForm
+        editProduct={editingProduct}
         onCancel={() => setEditingProduct(null)}
         onProductAdded={handleProductUpdate}
         onViewChange={onViewChange}
       />
-    )
+    );
   }
 
   return (
@@ -61,8 +89,12 @@ export default function InventoryManagement({ products, onProductUpdate, onProdu
       transition={{ duration: 0.6 }}
     >
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Inventory Management</h2>
-        <div className="text-sm text-gray-600">Total Products: {products.length}</div>
+        <h2 className="text-2xl font-bold text-gray-900">
+          Inventory Management
+        </h2>
+        <div className="text-sm text-gray-600">
+          Total Products: {products.length}
+        </div>
       </div>
 
       {/* Filters */}
@@ -107,19 +139,33 @@ export default function InventoryManagement({ products, onProductUpdate, onProdu
         <table className="w-full table-auto">
           <thead>
             <tr className="bg-gray-50">
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Product</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Fabric Type</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Regional Varieties</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Price</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Discounts</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Availability</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Actions</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
+                Product
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
+                Fabric Type
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
+                Regional Varieties
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
+                Price
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
+                Discounts
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
+                Availability
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {filteredProducts.map((product) => (
               <motion.tr
-                key={product.id}
+                key={product._id}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="hover:bg-gray-50"
@@ -128,29 +174,45 @@ export default function InventoryManagement({ products, onProductUpdate, onProdu
                   <div className="flex items-center space-x-3">
                     {product.images[0] && (
                       <img
-                        src={`${import.meta.env.VITE_API_URL}${product.images[0]}` || "/placeholder.svg"}
+                        src={
+                          `${import.meta.env.VITE_API_URL}${
+                            product.images[0]
+                          }` || "/placeholder.svg"
+                        }
                         alt={product.name}
                         className="h-12 w-12 rounded-lg object-cover"
                       />
                     )}
                     <div>
-                      <p className="font-medium text-gray-900">{product.name}</p>
-                      <p className="text-sm text-gray-500 capitalize">{product.productType}</p>
+                      <p className="font-medium text-gray-900">
+                        {product.name}
+                      </p>
+                      <p className="text-sm text-gray-500 capitalize">
+                        {product.productType}
+                      </p>
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-4 text-sm text-gray-700">{product.fabricType}</td>
-                <td className="px-4 py-4 text-sm text-gray-700">{product.regionalVarieties}</td>
-                <td className="px-4 py-4 text-sm text-gray-700">₹{product.price}</td>
-                <td className="px-4 py-4 text-sm text-gray-700">{product.discounts}%</td>
+                <td className="px-4 py-4 text-sm text-gray-700">
+                  {product.fabricType}
+                </td>
+                <td className="px-4 py-4 text-sm text-gray-700">
+                  {product.regionalVarieties}
+                </td>
+                <td className="px-4 py-4 text-sm text-gray-700">
+                  ₹{product.price}
+                </td>
+                <td className="px-4 py-4 text-sm text-gray-700">
+                  {product.discounts}%
+                </td>
                 <td className="px-4 py-4">
                   <span
                     className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                       product.availability === "In Stock"
                         ? "bg-green-100 text-green-800"
                         : product.availability === "Limited"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-red-100 text-red-800"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : "bg-red-100 text-red-800"
                     }`}
                   >
                     {product.availability}
@@ -173,7 +235,7 @@ export default function InventoryManagement({ products, onProductUpdate, onProdu
                       <Edit className="h-4 w-4" />
                     </button>
                     <button
-                      onClick={() => handleDelete(product.id)}
+                      onClick={() => handleDelete(product._id)}
                       className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
                       title="Delete Product"
                     >
@@ -187,7 +249,9 @@ export default function InventoryManagement({ products, onProductUpdate, onProdu
         </table>
 
         {filteredProducts.length === 0 && (
-          <div className="text-center py-8 text-gray-500">No products found matching your criteria.</div>
+          <div className="text-center py-8 text-gray-500">
+            No products found matching your criteria.
+          </div>
         )}
       </div>
 
@@ -200,8 +264,13 @@ export default function InventoryManagement({ products, onProductUpdate, onProdu
             animate={{ opacity: 1, scale: 1 }}
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold text-gray-900">{viewingProduct.name}</h3>
-              <button onClick={() => setViewingProduct(null)} className="text-gray-500 hover:text-gray-700">
+              <h3 className="text-xl font-bold text-gray-900">
+                {viewingProduct.name}
+              </h3>
+              <button
+                onClick={() => setViewingProduct(null)}
+                className="text-gray-500 hover:text-gray-700"
+              >
                 <X className="h-6 w-6" />
               </button>
             </div>
@@ -209,11 +278,14 @@ export default function InventoryManagement({ products, onProductUpdate, onProdu
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <div className="grid grid-cols-2 gap-2 mb-4">
-                  {viewingProduct.images.map((image, index) => (
+                  {viewingProduct.images.map((image) => (
                     <img
-                      key={index}
-                      src={`${import.meta.env.VITE_API_URL}${image}` || "/placeholder.svg"}
-                      alt={`${viewingProduct.name} ${index + 1}`}
+                      key={image}
+                      src={
+                        `${import.meta.env.VITE_API_URL}${image}` ||
+                        "/placeholder.svg"
+                      }
+                      alt={viewingProduct.name}
                       className="w-full h-32 object-cover rounded-lg"
                     />
                   ))}
@@ -226,8 +298,12 @@ export default function InventoryManagement({ products, onProductUpdate, onProdu
                   <p className="text-gray-900">{viewingProduct.fabricType}</p>
                 </div>
                 <div>
-                  <h4 className="font-medium text-gray-700">Regional Varieties</h4>
-                  <p className="text-gray-900">{viewingProduct.regionalVarieties}</p>
+                  <h4 className="font-medium text-gray-700">
+                    Regional Varieties
+                  </h4>
+                  <p className="text-gray-900">
+                    {viewingProduct.regionalVarieties}
+                  </p>
                 </div>
                 <div>
                   <h4 className="font-medium text-gray-700">Price</h4>
@@ -241,7 +317,10 @@ export default function InventoryManagement({ products, onProductUpdate, onProdu
                   <h4 className="font-medium text-gray-700">Sizes</h4>
                   <div className="flex flex-wrap gap-1">
                     {viewingProduct.sizes.map((size) => (
-                      <span key={size} className="px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded">
+                      <span
+                        key={size}
+                        className="px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded"
+                      >
                         {size}
                       </span>
                     ))}
@@ -254,8 +333,8 @@ export default function InventoryManagement({ products, onProductUpdate, onProdu
                       viewingProduct.availability === "In Stock"
                         ? "bg-green-100 text-green-800"
                         : viewingProduct.availability === "Limited"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-red-100 text-red-800"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : "bg-red-100 text-red-800"
                     }`}
                   >
                     {viewingProduct.availability}
@@ -263,7 +342,9 @@ export default function InventoryManagement({ products, onProductUpdate, onProdu
                 </div>
                 <div>
                   <h4 className="font-medium text-gray-700">Description</h4>
-                  <p className="text-gray-900">{viewingProduct.shortDescription}</p>
+                  <p className="text-gray-900">
+                    {viewingProduct.shortDescription}
+                  </p>
                 </div>
               </div>
             </div>
@@ -271,5 +352,5 @@ export default function InventoryManagement({ products, onProductUpdate, onProdu
         </div>
       )}
     </motion.div>
-  )
+  );
 }

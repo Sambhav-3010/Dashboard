@@ -1,5 +1,5 @@
 export interface Product {
-  id: string
+  _id: string
   name: string
   fabricType: string
   regionalVarieties: string
@@ -12,6 +12,7 @@ export interface Product {
   images: string[]
   createdAt: Date
   updatedAt: Date
+  quantity: number
 }
 
 export interface User {
