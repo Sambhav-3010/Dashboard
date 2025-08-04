@@ -8,7 +8,7 @@ const path = require("path");
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
-
+const maxUploadSize = process.env.MAX_UPLOAD_SIZE || '10mb';
 app.use(cors({
   origin: [process.env.FRONTEND_URL , process.env.BACKEND_URL, process.env.DEPLOY_URL],
   methods: ["GET", "POST", "PUT", "DELETE"],
@@ -19,7 +19,8 @@ mongoose.connect(process.env.MONGO_DB_URL)
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-app.use(express.json());
+app.use(express.json({ limit: maxUploadSize }));
+app.use(express.urlencoded({ extended: true, limit: maxUploadSize }));
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
