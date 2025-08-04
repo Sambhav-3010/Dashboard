@@ -3,11 +3,14 @@ import type React from "react"
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { Mail, Lock, Eye, EyeOff, AlertCircle } from "lucide-react"
-import { useDashboard } from "../context/DashboardContext"
 import { mockSellerLogin, validateSellerEmail } from "../utils/auth"
+import type { User } from "../types"
 
-export default function Login() {
-  const { dispatch } = useDashboard()
+interface LoginProps {
+  onLogin: (user: User | null) => void
+}
+
+export default function Login({ onLogin }: LoginProps) {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -30,7 +33,7 @@ export default function Login() {
     const user = mockSellerLogin(formData.email, formData.password)
 
     if (user) {
-      dispatch({ type: "SET_USER", payload: user })
+      onLogin(user)
     } else {
       setError("Invalid credentials. Please check your email and password.")
     }
