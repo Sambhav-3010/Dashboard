@@ -62,12 +62,22 @@ router.put("/:id", upload.array("images", 4), async (req, res) => {
   }
 });
 
-// Delete product
+// Delete product and its images
 router.delete("/:id", async (req, res) => {
   try {
-    const deleted = await Product.findByIdAndDelete(req.params.id);
-    if (!deleted) return res.status(404).json({ error: "Product not found" });
-    res.json({ message: "Product deleted successfully" });
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ error: "Product not found" });
+    if (product.images && product.images.length > 0) {
+      for (const imageUrl of product.images) {
+        const imagePath = path.join(__dirname, "..", imageUrl);
+        if (fs.existsSync(imagePath)) {
+          fs.unlinkSync(imagePath);
+        }
+      }
+    }
+
+    await Product.findByIdAndDelete(req.params.id);
+    res.json({ message: "Product and images deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
