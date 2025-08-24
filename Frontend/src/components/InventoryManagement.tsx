@@ -161,6 +161,9 @@ export default function InventoryManagement({
                 Availability
               </th>
               <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
+                Quantity
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
                 Actions
               </th>
             </tr>
@@ -220,6 +223,9 @@ export default function InventoryManagement({
                   >
                     {product.availability}
                   </span>
+                </td>
+                <td className="px-4 py-4 text-sm text-gray-700">
+                  {product.quantity}
                 </td>
                 <td className="px-4 py-4">
                   <div className="flex items-center space-x-2">

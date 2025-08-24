@@ -39,44 +39,46 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Update product (replace images)
+// Update product (with or without replacing images)
 router.put("/:id", upload.array("images", 4), async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ error: "Product not found" });
 
-    // If no new files uploaded, reject update
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ error: "New images are required for update" });
-    }
-
-    // Delete old images from disk
-    if (product.images && product.images.length > 0) {
-      for (const imageUrl of product.images) {
-        const imagePath = path.join(__dirname, "..", imageUrl);
-        if (fs.existsSync(imagePath)) {
-          fs.unlinkSync(imagePath);
-        }
-      }
-    }
-
-    // Save new images
-    const newImageUrls = req.files.map((file) => `/uploads/${file.filename}`);
-    const updateData = {
+    let updateData = {
       ...req.body,
-      images: newImageUrls,
       updatedAt: new Date(),
     };
+
+    if (req.body.images === "[]") {
+      updateData.images = product.images;
+    }
+    else if (req.files && req.files.length > 0) {
+      if (product.images && product.images.length > 0) {
+        for (const imageUrl of product.images) {
+          const imagePath = path.join(__dirname, "..", imageUrl);
+          if (fs.existsSync(imagePath)) {
+            fs.unlinkSync(imagePath);
+          }
+        }
+      }
+
+      const newImageUrls = req.files.map((file) => `/uploads/${file.filename}`);
+      updateData.images = newImageUrls;
+    } else {
+      updateData.images = product.images;
+    }
 
     const updated = await Product.findByIdAndUpdate(req.params.id, updateData, {
       new: true,
     });
 
-    res.status(200).json({message: "Product updated successfully", product: updated});
+    res.status(200).json({ message: "Product updated successfully", product: updated });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
+
 
 
 // Delete product and its images
