@@ -1,18 +1,29 @@
-import { useEffect, useState } from "react"
-import Header from "./components/Header"
-import Login from "./components/Login"
-import Dashboard from "./components/Dashboard"
-import AddProductForm from "./components/AddProductForm"
-import InventoryManagement from "./components/InventoryManagement"
-import { getAuthFromStorage, saveAuthToStorage, clearAuthFromStorage } from "./utils/auth"
-import type { Product, User, DashboardStats } from "./types"
+import { useEffect, useState } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+
+import Header from "./components/Header";
+import Login from "./components/Login";
+import Dashboard from "./components/Dashboard";
+import AddProductForm from "./components/AddProductForm";
+import InventoryManagement from "./components/InventoryManagement";
+
+import {
+  getAuthFromStorage,
+  saveAuthToStorage,
+  clearAuthFromStorage,
+} from "./utils/auth";
+import type { Product, User, DashboardStats } from "./types";
 
 interface AppState {
-  user: User | null
-  products: Product[]
-  stats: DashboardStats
-  isAuthenticated: boolean
-  currentView: "dashboard" | "add-product" | "inventory"
+  user: User | null;
+  products: Product[];
+  stats: DashboardStats;
+  isAuthenticated: boolean;
 }
 
 const initialState: AppState = {
@@ -25,93 +36,99 @@ const initialState: AppState = {
     limitedStockProducts: 0,
   },
   isAuthenticated: false,
-  currentView: "dashboard",
-}
+};
 
 function App() {
-  const [state, setState] = useState<AppState>(initialState)
-  const [isLoading, setIsLoading] = useState(true)
+  const [state, setState] = useState<AppState>(initialState);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Check for existing authentication on app load
-  useEffect(() => {
-    const savedUser = getAuthFromStorage()
-    if (savedUser) {
-      setState(prev => ({
-        ...prev,
-        user: savedUser,
-        isAuthenticated: true,
-      }))
-    }
-    setIsLoading(false)
-  }, [])
-
-  // Fetch products from backend
-  useEffect(() => {
+  const fetchProducts = () => {
     if (state.isAuthenticated) {
       fetch(`${import.meta.env.VITE_API_URL}/products`)
         .then((res) => res.json())
         .then((data: Product[]) => {
-          setProducts(data)
+          setProducts(data);
         })
         .catch((err) => {
-          console.error("Failed to fetch products", err)
-        })
+          console.error("Failed to fetch products", err);
+        });
     }
-  }, [state.isAuthenticated])
+  };
+
+  // Check for existing authentication on app load
+  useEffect(() => {
+    const savedUser = getAuthFromStorage();
+    if (savedUser) {
+      setState((prev) => ({
+        ...prev,
+        user: savedUser,
+        isAuthenticated: true,
+      }));
+    }
+    setIsLoading(false);
+  }, []);
+
+  // Fetch products from backend
+  useEffect(() => {
+    if (state.isAuthenticated) {
+      fetchProducts();
+    }
+  }, [state.isAuthenticated]);
 
   const setUser = (user: User | null) => {
     if (user) {
-      saveAuthToStorage(user)
+      saveAuthToStorage(user);
     } else {
-      clearAuthFromStorage()
+      clearAuthFromStorage();
     }
-    
-    setState(prev => ({
+
+    setState((prev) => ({
       ...prev,
       user,
       isAuthenticated: !!user,
-    }))
-  }
+    }));
+  };
 
   const setProducts = (products: Product[]) => {
     const stats = {
       totalProducts: products.length,
-      inStockProducts: products.filter((p) => p.availability === "In Stock").length,
-      outOfStockProducts: products.filter((p) => p.availability === "Out of Stock").length,
-      limitedStockProducts: products.filter((p) => p.availability === "Limited").length,
-    }
-    setState(prev => ({
+      inStockProducts: products.filter((p) => p.availability === "In Stock")
+        .length,
+      outOfStockProducts: products.filter(
+        (p) => p.availability === "Out of Stock"
+      ).length,
+      limitedStockProducts: products.filter((p) => p.availability === "Limited")
+        .length,
+    };
+    setState((prev) => ({
       ...prev,
       products,
       stats,
-    }))
-  }
+    }));
+  };
 
   const addProduct = (product: Product) => {
-    const newProducts = [...state.products, product]
-    setProducts(newProducts)
-  }
+    const newProducts = [...state.products, product];
+    setProducts(newProducts);
+  };
 
   const updateProduct = (product: Product) => {
-    const updatedProducts = state.products.map((p) => (p._id === product._id ? product : p))
-    setProducts(updatedProducts)
-  }
+    const updatedProducts = state.products.map((p) =>
+      p._id === product._id ? product : p
+    );
+    setProducts(updatedProducts);
+  };
 
   const deleteProduct = (productId: string) => {
-    const filteredProducts = state.products.filter((p) => p._id !== productId)
-    setProducts(filteredProducts)
-  }
-
-  const setView = (view: "dashboard" | "add-product" | "inventory") => {
-    setState(prev => ({ ...prev, currentView: view }))
-  }
+    const filteredProducts = state.products.filter((p) => p._id !== productId);
+    setProducts(filteredProducts);
+  };
 
   const logout = () => {
-    clearAuthFromStorage()
-    setState(initialState)
-  }
+    clearAuthFromStorage();
+    setState(initialState);
+  };
 
-  // Show loading state while checking authentication
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center">
@@ -120,52 +137,53 @@ function App() {
           <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>
-    )
-  }
-
-  if (!state.isAuthenticated) {
-    return <Login onLogin={setUser} />
-  }
-
-  const renderCurrentView = () => {
-    switch (state.currentView) {
-      case "add-product":
-        return (
-          <AddProductForm 
-            onProductAdded={addProduct}
-            onViewChange={setView}
-          />
-        )
-      case "inventory":
-        return (
-          <InventoryManagement 
-            products={state.products}
-            onProductUpdate={updateProduct}
-            onProductDelete={deleteProduct}
-            onViewChange={setView}
-          />
-        )
-      default:
-        return (
-          <Dashboard 
-            stats={state.stats}
-            onViewChange={setView}
-          />
-        )
-    }
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header 
-        user={state.user}
-        currentView={state.currentView}
-        onViewChange={setView}
-        onLogout={logout}
-      />
-      <div className="container mx-auto px-4 py-8">{renderCurrentView()}</div>
-    </div>
-  )
+    <Router>
+      {!state.isAuthenticated ? (
+        <Routes>
+          <Route path="/login" element={<Login onLogin={setUser} />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      ) : (
+        <div className="min-h-screen bg-gray-50">
+          <Header user={state.user} onLogout={logout} />
+          <div className="container mx-auto px-4 py-8">
+            <Routes>
+              <Route
+                path="/dashboard"
+                element={
+                  <Dashboard
+                    stats={state.stats}
+                    user={state.user}
+                  />
+                }
+              />
+              <Route
+                path="/add-product"
+                element={<AddProductForm onProductAdded={addProduct} />}
+              />
+              <Route
+                path="/inventory"
+                element={
+                  <InventoryManagement
+                    products={state.products}
+                    onProductUpdate={updateProduct}
+                    onProductDelete={deleteProduct}
+                    fetchProducts={fetchProducts}
+                  />
+                }
+              />
+              {/* Default redirect */}
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </div>
+        </div>
+      )}
+    </Router>
+  );
 }
 
-export default App
+export default App;

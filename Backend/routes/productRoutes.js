@@ -39,28 +39,45 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Update product
+// Update product (replace images)
 router.put("/:id", upload.array("images", 4), async (req, res) => {
   try {
-    let imageUrls;
-    if (req.files && req.files.length > 0) {
-      imageUrls = req.files.map((file) => `/uploads/${file.filename}`);
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ error: "Product not found" });
+
+    // If no new files uploaded, reject update
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: "New images are required for update" });
     }
 
-    const updateData = { ...req.body };
-    if (imageUrls) updateData.images = imageUrls;
-    updateData.updatedAt = new Date();
+    // Delete old images from disk
+    if (product.images && product.images.length > 0) {
+      for (const imageUrl of product.images) {
+        const imagePath = path.join(__dirname, "..", imageUrl);
+        if (fs.existsSync(imagePath)) {
+          fs.unlinkSync(imagePath);
+        }
+      }
+    }
+
+    // Save new images
+    const newImageUrls = req.files.map((file) => `/uploads/${file.filename}`);
+    const updateData = {
+      ...req.body,
+      images: newImageUrls,
+      updatedAt: new Date(),
+    };
 
     const updated = await Product.findByIdAndUpdate(req.params.id, updateData, {
       new: true,
     });
 
-    if (!updated) return res.status(404).json({ error: "Product not found" });
-    res.json(updated);
+    res.status(200).json({message: "Product updated successfully", product: updated});
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
+
 
 // Delete product and its images
 router.delete("/:id", async (req, res) => {

@@ -1,15 +1,15 @@
 import { motion } from "framer-motion"
 import { LogOut, User, Home, Plus, Package } from "lucide-react"
 import type { User as UserType } from "../types"
+import { NavLink } from "react-router-dom";
 
-interface HeaderProps {
-  user: UserType | null
-  currentView: "dashboard" | "add-product" | "inventory"
-  onViewChange: (view: "dashboard" | "add-product" | "inventory") => void
-  onLogout: () => void
+export interface HeaderProps {
+  user: UserType | null;
+  onLogout: () => void;
 }
 
-export default function Header({ user, currentView, onViewChange, onLogout }: HeaderProps) {
+
+export default function Header({ user, onLogout }: HeaderProps) {
   return (
     <motion.header
       className="bg-white shadow-lg border-b border-gray-200"
@@ -32,35 +32,39 @@ export default function Header({ user, currentView, onViewChange, onLogout }: He
           {/* Navigation */}
           <div className="flex items-center space-x-4">
             <nav className="flex space-x-2">
-              <button
-                onClick={() => onViewChange("dashboard")}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
-                  currentView === "dashboard" ? "bg-amber-100 text-amber-700" : "text-gray-600 hover:bg-gray-100"
-                }`}
+              <NavLink
+                to="/dashboard"
+                className={({ isActive }) =>
+                  `flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
+                    isActive ? "bg-amber-100 text-amber-700" : "text-gray-600 hover:bg-gray-100"
+                  }`
+                }
               >
                 <Home className="h-4 w-4" />
                 <span>Dashboard</span>
-              </button>
-              <button
-                onClick={() => onViewChange("add-product")}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
-                  currentView === "add-product"
-                    ? "bg-amber-100 text-amber-700"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}
+              </NavLink>
+              <NavLink
+                to="/add-product"
+                className={({ isActive }) =>
+                  `flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
+                    isActive ? "bg-amber-100 text-amber-700" : "text-gray-600 hover:bg-gray-100"
+                  }`
+                }
               >
                 <Plus className="h-4 w-4" />
                 <span>Add Product</span>
-              </button>
-              <button
-                onClick={() => onViewChange("inventory")}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
-                  currentView === "inventory" ? "bg-amber-100 text-amber-700" : "text-gray-600 hover:bg-gray-100"
-                }`}
+              </NavLink>
+              <NavLink
+                to="/inventory"
+                className={({ isActive }) =>
+                  `flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
+                    isActive ? "bg-amber-100 text-amber-700" : "text-gray-600 hover:bg-gray-100"
+                  }`
+                }
               >
                 <Package className="h-4 w-4" />
                 <span>Inventory</span>
-              </button>
+              </NavLink>
             </nav>
 
             <div className="flex items-center space-x-4 border-l pl-4">

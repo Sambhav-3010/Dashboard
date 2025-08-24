@@ -5,8 +5,8 @@ import { Mail, Lock, Eye, EyeOff, AlertCircle } from "lucide-react"
 import { mockSellerLogin, validateSellerEmail } from "../utils/auth"
 import type { User } from "../types"
 
-interface LoginProps {
-  onLogin: (user: User | null) => void
+export interface LoginProps {
+  onLogin: (user: User | null) => void;
 }
 
 export default function Login({ onLogin }: LoginProps) {

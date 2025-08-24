@@ -1,27 +1,31 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Edit, Trash2, Eye, Search, X } from "lucide-react";
 import type { Product } from "../types";
 import AddProductForm from "./AddProductForm";
 
-interface InventoryManagementProps {
+export interface InventoryManagementProps {
   products: Product[];
   onProductUpdate: (product: Product) => void;
   onProductDelete: (productId: string) => void;
-  onViewChange: (view: "dashboard" | "add-product" | "inventory") => void;
+  fetchProducts: () => void;
 }
 
 export default function InventoryManagement({
   products,
   onProductUpdate,
   onProductDelete,
-  onViewChange,
+  fetchProducts
 }: InventoryManagementProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
   const [filterAvailability, setFilterAvailability] = useState<string>("all");
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
+    useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+  
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch =
@@ -76,7 +80,6 @@ export default function InventoryManagement({
         editProduct={editingProduct}
         onCancel={() => setEditingProduct(null)}
         onProductAdded={handleProductUpdate}
-        onViewChange={onViewChange}
       />
     );
   }

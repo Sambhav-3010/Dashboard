@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Upload, X, Plus, Save } from "lucide-react";
 import type { Product } from "../types";
+import { useNavigate } from "react-router-dom";
 
 const productSchema = z.object({
   name: z.string().min(1, "Product name is required"),
@@ -24,20 +25,18 @@ const productSchema = z.object({
 
 type ProductFormData = z.infer<typeof productSchema>;
 
-interface AddProductFormProps {
+export interface AddProductFormProps {
   editProduct?: Product;
   onCancel?: () => void;
   onProductAdded: (product: Product) => void;
-  onViewChange: (view: "dashboard" | "add-product" | "inventory") => void;
 }
 
 export default function AddProductForm({
   editProduct,
   onCancel,
   onProductAdded,
-  onViewChange,
 }: AddProductFormProps) {
-  const [images, setImages] = useState<string[]>(editProduct?.images || []);
+  const [images, setImages] = useState<string[]>([]);
   const [sizes, setSizes] = useState<string[]>(editProduct?.sizes || []);
   const [newSize, setNewSize] = useState("");
 
@@ -64,6 +63,7 @@ export default function AddProductForm({
         }
       : undefined,
   });
+  const navigate = useNavigate();
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -143,7 +143,7 @@ export default function AddProductForm({
         reset();
         setImages([]);
         setSizes([]);
-        onViewChange("dashboard");
+        navigate("/dashboard");
       }
       if (onCancel) onCancel();
     } catch (err: any) {
@@ -390,7 +390,7 @@ export default function AddProductForm({
         {/* Image Upload */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Product Images (Max 4)
+            Product Images (Max 4) — required when updating as well everytime
           </label>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             {images.map((image, index) => (
