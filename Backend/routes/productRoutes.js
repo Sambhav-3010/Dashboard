@@ -79,8 +79,6 @@ router.put("/:id", upload.array("images", 4), async (req, res) => {
   }
 });
 
-
-
 // Delete product and its images
 router.delete("/:id", async (req, res) => {
   try {
@@ -97,6 +95,16 @@ router.delete("/:id", async (req, res) => {
 
     await Product.findByIdAndDelete(req.params.id);
     res.json({ message: "Product and images deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get("/:id", async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ error: "Product not found" });
+    res.json(product);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

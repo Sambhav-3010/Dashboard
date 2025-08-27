@@ -10,7 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const maxUploadSize = process.env.MAX_UPLOAD_SIZE || '10mb';
 app.use(cors({
-  origin: [process.env.FRONTEND_URL , process.env.BACKEND_URL, process.env.DEPLOY_URL],
+  origin: [process.env.FRONTEND_URL , process.env.BACKEND_URL, process.env.DEPLOY_URL, process.env.FRONTEND_URL_WEBSITE],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true,
 }));
