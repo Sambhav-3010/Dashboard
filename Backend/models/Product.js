@@ -22,6 +22,7 @@ const productSchema = new mongoose.Schema({
     default: 1,
     min: [0, "Quantity must be a positive number"],
   },
+  instagramLink: { type: String, trim: true },
 }, { timestamps: true });
 
 module.exports = mongoose.model("Product", productSchema);

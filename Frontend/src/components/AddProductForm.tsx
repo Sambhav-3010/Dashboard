@@ -21,6 +21,7 @@ const productSchema = z.object({
     .string()
     .min(10, "Description must be at least 10 characters"),
   quantity: z.number().min(1, "Quantity must be a positive number"),
+  instagramLink: z.string().url("Invalid URL format").optional().or(z.literal("")),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
@@ -60,6 +61,7 @@ export default function AddProductForm({
           productType: editProduct.productType,
           shortDescription: editProduct.shortDescription,
           quantity: editProduct.quantity || 1,
+          instagramLink: editProduct.instagramLink || "",
         }
       : undefined,
   });
@@ -322,6 +324,23 @@ export default function AddProductForm({
               </p>
             )}
           </div>
+        </div>
+
+        {/* Instagram Link */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Instagram Link
+          </label>
+          <input
+            {...register("instagramLink")}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+            placeholder="Enter Instagram link (optional)"
+          />
+          {errors.instagramLink && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.instagramLink.message}
+            </p>
+          )}
         </div>
 
         {/* Sizes */}

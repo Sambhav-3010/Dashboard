@@ -13,6 +13,7 @@ export interface Product {
   createdAt: Date
   updatedAt: Date
   quantity: number
+  instagramLink?: string
 }
 
 export interface User {
