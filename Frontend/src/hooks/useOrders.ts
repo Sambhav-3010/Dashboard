@@ -31,11 +31,15 @@ export const useOrders = (paymentStatusFilter: string = "all", orderIdSearchTerm
       currentOrders = currentOrders.filter(order => order.status === paymentStatusFilter);
     }
 
-    // Search by order ID
+    // Search by order ID, user name, or user phone number
     if (orderIdSearchTerm) {
-      currentOrders = currentOrders.filter(order =>
-        order._id.toLowerCase().includes(orderIdSearchTerm.toLowerCase())
-      );
+      const lowerCaseSearchTerm = orderIdSearchTerm.toLowerCase();
+      currentOrders = currentOrders.filter(order => {
+        const matchesOrderId = order._id.toLowerCase().includes(lowerCaseSearchTerm);
+        const matchesUserName = order.user?.name?.toLowerCase().includes(lowerCaseSearchTerm);
+        const matchesUserPhoneNumber = order.user?.phoneNumber?.toLowerCase().includes(lowerCaseSearchTerm);
+        return matchesOrderId || matchesUserName || matchesUserPhoneNumber;
+      });
     }
 
     setFilteredOrders(currentOrders);

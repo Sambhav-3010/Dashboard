@@ -139,7 +139,7 @@ const OrderList: React.FC = () => {
                       ))}
                     </select>
                   </td>
-                  <td className="px-4 py-4 text-sm text-gray-700">{new Date(order.createdAt).toLocaleDateString()}</td>
+                  <td className="px-4 py-4 text-sm text-gray-700">{new Date(order.createdAt).toLocaleDateString('en-GB')}</td>
                   <td className="px-4 py-4 text-sm text-gray-700 flex items-center space-x-2">
                     <button
                       onClick={() => handleConfirmStatus(order._id)}
