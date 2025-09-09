@@ -33,6 +33,7 @@ export interface Order {
   totalAmount: number;
   status: string;
   createdAt: string;
+  emailSent?: boolean; // Add this line
 }
 
 export const fetchUsers = async (): Promise<User[]> => {

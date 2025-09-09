@@ -78,11 +78,18 @@ router.put("/:id/status", async (req, res) => {
           <p>Best regards, <br/> <strong>Team Naaree Collections</strong></p>
         </div>
       `;
+      let emailSent = false;
       try {
-        await sendEmail({ email: order.user.email, subject: emailSubject, html: emailBody });
+        emailSent = await sendEmail({ email: order.user.email, subject: emailSubject, html: emailBody });
+        if (emailSent) {
+          // console.log(`Order status update email sent to ${order.user.email} for order ${order._id}`);
+        } else {
+          console.error(`Failed to send order status update email for order ${order._id} to ${order.user.email}: Email utility reported failure.`);
+        }
       } catch (emailError) {
         console.error(`Failed to send order status update email for order ${order._id} to ${order.user.email}:`, emailError);
       }
+      order.emailSent = emailSent; // Add emailSent status to the order object for frontend
     }
 
     res.status(200).json(order);

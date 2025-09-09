@@ -27,10 +27,14 @@ export const useOrders = () => {
       setOrders((prevOrders) =>
         prevOrders.map((order) => (order._id === orderId ? updatedOrder : order))
       );
-      alert(`Order ${orderId} status updated to ${status} successfully!`);
+      let alertMessage = `Order ${orderId} status updated to ${status} successfully!`;
+      if (updatedOrder.emailSent !== undefined) {
+        alertMessage += updatedOrder.emailSent ? " Email notification sent." : " Failed to send email notification.";
+      }
+      alert(alertMessage);
     } catch (err: any) {
       setError(err.message);
-      alert(`Failed to update order ${orderId} status: ${err.message}`);
+      alert(`Failed to update order ${orderId} status: ${err.message}. Email notification not sent.`);
     }
   };
 
