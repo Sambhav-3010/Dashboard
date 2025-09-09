@@ -98,7 +98,7 @@ const OrderList: React.FC = () => {
               <tr className="bg-gray-50">
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Order ID</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Customer Name</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Phone Number</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">WhatsApp Number</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Items</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Total Amount (₹)</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Status</th>
@@ -115,7 +115,7 @@ const OrderList: React.FC = () => {
                 >
                   <td className="px-4 py-4 text-sm text-gray-700">{order._id}</td>
                   <td className="px-4 py-4 text-sm text-gray-700">{order.user?.name || "N/A"}</td>
-                  <td className="px-4 py-4 text-sm text-gray-700">{order.user?.phoneNumber || "N/A"}</td>
+                  <td className="px-4 py-4 text-sm text-gray-700">{order.shippingAddress.whatsappNumber || "N/A"}</td>
                   <td className="px-4 py-4 text-sm text-gray-700">
                     <ul>
                       {order.items.map((item) => (
