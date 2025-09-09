@@ -25,7 +25,7 @@ interface ShippingAddress {
   whatsappNumber: string;
 }
 
-interface Order {
+export interface Order {
   _id: string;
   user: { _id: string; name: string; email: string; phoneNumber?: string }; // Added phoneNumber
   items: ProductItem[];
