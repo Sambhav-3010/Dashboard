@@ -45,23 +45,8 @@ export const fetchUsers = async (searchTerm: string = ""): Promise<User[]> => {
   return response.json();
 };
 
-export const fetchOrders = async (paymentStatusFilter: string = "all", orderIdSearchTerm: string = ""): Promise<Order[]> => {
-  let url = `${API_BASE_URL}/orders`;
-  const queryParams: string[] = [];
-
-  if (paymentStatusFilter && paymentStatusFilter !== "all") {
-    queryParams.push(`status=${encodeURIComponent(paymentStatusFilter)}`);
-  }
-
-  if (orderIdSearchTerm) {
-    queryParams.push(`search=${encodeURIComponent(orderIdSearchTerm)}`);
-  }
-
-  if (queryParams.length > 0) {
-    url += `?${queryParams.join("&")}`;
-  }
-
-  const response = await fetch(url);
+export const fetchOrders = async (): Promise<Order[]> => {
+  const response = await fetch(`${API_BASE_URL}/orders`);
   if (!response.ok) {
     throw new Error("Failed to fetch orders");
   }

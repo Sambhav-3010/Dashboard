@@ -3,23 +3,43 @@ import { fetchOrders, updateOrderStatus, deleteOrder, Order } from "../services/
 
 export const useOrders = (paymentStatusFilter: string = "all", orderIdSearchTerm: string = "") => {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]); // New state for filtered orders
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   const getOrders = useCallback(async () => {
     try {
-      const data = await fetchOrders(paymentStatusFilter, orderIdSearchTerm);
+      const data = await fetchOrders(); // Fetch all orders
       setOrders(data);
     } catch (err: any) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [paymentStatusFilter, orderIdSearchTerm]);
+  }, []);
 
   useEffect(() => {
     getOrders();
   }, [getOrders]);
+
+  // Effect to filter orders based on paymentStatusFilter and orderIdSearchTerm
+  useEffect(() => {
+    let currentOrders = [...orders];
+
+    // Filter by payment status
+    if (paymentStatusFilter && paymentStatusFilter !== "all") {
+      currentOrders = currentOrders.filter(order => order.status === paymentStatusFilter);
+    }
+
+    // Search by order ID
+    if (orderIdSearchTerm) {
+      currentOrders = currentOrders.filter(order =>
+        order._id.toLowerCase().includes(orderIdSearchTerm.toLowerCase())
+      );
+    }
+
+    setFilteredOrders(currentOrders);
+  }, [orders, paymentStatusFilter, orderIdSearchTerm]);
 
   const updateOrder = async (orderId: string, status: string) => {
     try {
@@ -53,5 +73,5 @@ export const useOrders = (paymentStatusFilter: string = "all", orderIdSearchTerm
     }
   };
 
-  return { orders, loading, error, updateOrder, removeOrder };
+  return { orders: filteredOrders, loading, error, updateOrder, removeOrder }; // Return filteredOrders
 };
