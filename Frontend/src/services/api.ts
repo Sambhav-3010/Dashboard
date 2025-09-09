@@ -1,6 +1,6 @@
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
-interface User {
+export interface User {
   _id: string;
   name: string;
   email: string;
