@@ -11,6 +11,8 @@ import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
 import AddProductForm from "./components/AddProductForm";
 import InventoryManagement from "./components/InventoryManagement";
+import UserList from "./pages/UserList"; // Import UserList component
+import OrderList from "./pages/OrderList"; // Import OrderList component
 
 import {
   getAuthFromStorage,
@@ -176,6 +178,10 @@ function App() {
                   />
                 }
               />
+              {/* User Management Route */}
+              <Route path="/users" element={<UserList />} />
+              {/* Order Management Route */}
+              <Route path="/orders" element={<OrderList />} />
               {/* Default redirect */}
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>

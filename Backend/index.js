@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const productRoutes = require("./routes/productRoutes");
+const userRoutes = require("./routes/userRoutes"); // Import user routes
+const orderRoutes = require("./routes/orderRoutes"); // Import order routes
 const path = require("path");
 
 dotenv.config();
@@ -25,6 +27,8 @@ app.use(express.urlencoded({ extended: true, limit: maxUploadSize }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use("/products", productRoutes);
+app.use("/users", userRoutes); // Register user routes
+app.use("/orders", orderRoutes); // Register order routes
 
 app.get("/", (req, res) => {
   res.send("Welcome to Naaree Collection Backend");

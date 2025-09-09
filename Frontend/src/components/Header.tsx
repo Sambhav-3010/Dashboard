@@ -1,5 +1,5 @@
 import { motion } from "framer-motion"
-import { LogOut, User, Home, Plus, Package } from "lucide-react"
+import { LogOut, User, Home, Plus, Package, ClipboardList } from "lucide-react"
 import type { User as UserType } from "../types"
 import { NavLink } from "react-router-dom";
 
@@ -64,6 +64,28 @@ export default function Header({ user, onLogout }: HeaderProps) {
               >
                 <Package className="h-4 w-4" />
                 <span>Inventory</span>
+              </NavLink>
+              <NavLink
+                to="/users"
+                className={({ isActive }) =>
+                  `flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
+                    isActive ? "bg-amber-100 text-amber-700" : "text-gray-600 hover:bg-gray-100"
+                  }`
+                }
+              >
+                <User className="h-4 w-4" />
+                <span>Users</span>
+              </NavLink>
+              <NavLink
+                to="/orders"
+                className={({ isActive }) =>
+                  `flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
+                    isActive ? "bg-amber-100 text-amber-700" : "text-gray-600 hover:bg-gray-100"
+                  }`
+                }
+              >
+                <ClipboardList className="h-4 w-4" />
+                <span>Orders</span>
               </NavLink>
             </nav>
 
