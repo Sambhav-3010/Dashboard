@@ -83,7 +83,6 @@ const OrderList: React.FC = () => {
         </select>
         <input
           type="text"
-          placeholder="Search by Order ID..."
           value={orderIdSearchTerm}
           onChange={(e) => setOrderIdSearchTerm(e.target.value)}
           className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 flex-grow"
