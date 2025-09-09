@@ -176,7 +176,8 @@ const OrderList: React.FC = () => {
             <p><strong>Order ID:</strong> <span className="font-medium text-gray-900">{selectedOrder._id}</span></p>
             <p><strong>Customer Name:</strong> <span className="font-medium text-gray-900">{selectedOrder.user?.name || "N/A"}</span></p>
             <p><strong>Customer Email:</strong> <span className="font-medium text-gray-900">{selectedOrder.user?.email || "N/A"}</span></p>
-            <p><strong>Phone Number:</strong> <span className="font-medium text-gray-900">{selectedOrder.user?.phoneNumber || "N/A"}</span></p>
+            <p><strong>Customer Phone Number:</strong> <span className="font-medium text-gray-900">{selectedOrder.user?.phoneNumber || "N/A"}</span></p>
+            <p><strong>WhatsApp Number (Delivery):</strong> <span className="font-medium text-gray-900">{selectedOrder.shippingAddress.whatsappNumber || "N/A"}</span></p>
             <p><strong>Total Amount:</strong> <span className="font-medium text-gray-900">₹{selectedOrder.totalAmount.toFixed(2)}</span></p>
             <p><strong>Status:</strong> <span className="font-medium text-gray-900">{selectedOrder.status.charAt(0).toUpperCase() + selectedOrder.status.slice(1).replace('-', ' ')}</span></p>
             <p><strong>Ordered At:</strong> <span className="font-medium text-gray-900">{new Date(selectedOrder.createdAt).toLocaleString()}</span></p>
