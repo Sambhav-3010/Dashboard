@@ -27,8 +27,10 @@ export const useOrders = () => {
       setOrders((prevOrders) =>
         prevOrders.map((order) => (order._id === orderId ? updatedOrder : order))
       );
+      alert(`Order ${orderId} status updated to ${status} successfully!`);
     } catch (err: any) {
       setError(err.message);
+      alert(`Failed to update order ${orderId} status: ${err.message}`);
     }
   };
 

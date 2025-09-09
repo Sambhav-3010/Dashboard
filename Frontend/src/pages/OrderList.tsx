@@ -107,7 +107,7 @@ const OrderList: React.FC = () => {
                     <select
                       value={pendingStatus[order._id] || order.status}
                       onChange={(e) => handleLocalStatusChange(order._id, e.target.value)}
-                      className="block mx-auto px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm max-w-[150px]"
+                      className="block mx-auto pl-4 pr-6 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm max-w-[150px]"
                     >
                       {orderStatusOptions.map((status) => (
                         <option key={status} value={status}>

@@ -22,26 +22,73 @@ router.put("/:id/status", async (req, res) => {
       req.params.id,
       { status },
       { new: true }
-    ).populate("user", "email phoneNumber"); // Populate user email and phone number
+    )
+      .populate("user", "name email phoneNumber") // Populate user name, email, and phone number
+      .populate("items.product", "name price"); // Populate product name and price
 
     if (!order) return res.status(404).json({ error: "Order not found" });
 
     // Send email notification
     if (order.user && order.user.email) {
-      const subject = `Order Status Update: Your Order #${order._id} is now ${status}`;
-      const message = `
-        <p>Dear Customer,</p>
-        <p>Your order status has been updated.</p>
-        <p>Order ID: <strong>${order._id}</strong></p>
-        <p>New Status: <strong>${status}</strong></p>
-        <p>Thank you for shopping with us!</p>
+      const itemsRows = order.items.map(
+        (item) => `
+          <tr>
+            <td style="padding:8px; border:1px solid #ddd;">${item.quantity}</td>
+            <td style="padding:8px; border:1px solid #ddd;">${item.product.name}</td>
+            <td style="padding:8px; border:1px solid #ddd;">₹${item.price.toFixed(2)}</td>
+            <td style="padding:8px; border:1px solid #ddd;">₹${(item.price * item.quantity).toFixed(2)}</td>
+          </tr>
+        `
+      ).join("");
+
+      const emailSubject = `Order Status Update: Your Order #${order._id} is now ${status}`;
+      const emailBody = `
+        <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+          <h2 style="color:#4CAF50;">Hi ${order.user.name || "Customer"},</h2>
+          <p>Your order status has been updated!</p>
+          <p>The new status for your Order ID: <strong>${order._id}</strong> is: <strong>${status.charAt(0).toUpperCase() + status.slice(1).replace('-', ' ')}</strong></p>
+          
+          <h3>Order Details</h3>
+          <p><strong>Order ID:</strong> ${order._id}</p>
+
+          <table style="width:100%; border-collapse: collapse; margin-top:15px;">
+            <thead>
+              <tr style="background-color:#f8f8f8;">
+                <th style="padding:8px; border:1px solid #ddd;">Qty</th>
+                <th style="padding:8px; border:1px solid #ddd;">Product</th>
+                <th style="padding:8px; border:1px solid #ddd;">Price</th>
+                <th style="padding:8px; border:1px solid #ddd;">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsRows}
+            </tbody>
+          </table>
+
+          <p style="margin-top:15px;"><strong>Total Amount:</strong> ₹${order.totalAmount.toFixed(2)}</p>
+
+          <h3>Shipping Address</h3>
+          <p>
+            ${order.shippingAddress.street}, ${order.shippingAddress.city}, ${order.shippingAddress.state} <br/>
+            ${order.shippingAddress.zipCode}, ${order.shippingAddress.country} <br/>
+            <strong>WhatsApp:</strong> ${order.shippingAddress.whatsappNumber}
+          </p>
+
+          <p style="margin-top:20px;">We will contact you shortly on your WhatsApp number provided above if needed.</p>
+          <p>Best regards, <br/> <strong>Team Naaree Collections</strong></p>
+        </div>
       `;
-      await sendEmail({ email: order.user.email, subject, message });
+      try {
+        await sendEmail({ email: order.user.email, subject: emailSubject, html: emailBody });
+      } catch (emailError) {
+        console.error(`Failed to send order status update email for order ${order._id} to ${order.user.email}:`, emailError);
+      }
     }
 
     res.status(200).json(order);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error(`Error updating order status for order ${req.params.id}:`, err);
+    res.status(400).json({ error: "Failed to update order status: " + err.message });
   }
 });
 
