@@ -3,7 +3,12 @@ import { useUsers } from "../hooks/useUsers";
 import { motion } from "framer-motion"; // Import motion
 
 const UserList: React.FC = () => {
-  const { users, loading, error } = useUsers();
+  const [searchTerm, setSearchTerm] = React.useState<string>("");
+  const { users, loading, error } = useUsers(searchTerm);
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
 
   if (loading) return <div className="text-center text-lg mt-8">Loading users...</div>;
   if (error) return <div className="text-center text-lg text-red-500 mt-8">Error: {error}</div>;
@@ -16,6 +21,15 @@ const UserList: React.FC = () => {
       transition={{ duration: 0.6 }}
     >
       <h1 className="text-2xl font-bold text-gray-900 mb-6">User Management</h1>
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Search by name or phone number..."
+          value={searchTerm}
+          onChange={handleSearchChange}
+          className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+        />
+      </div>
       {users.length === 0 ? (
         <p className="text-center text-gray-600 py-8">No users found.</p>
       ) : (

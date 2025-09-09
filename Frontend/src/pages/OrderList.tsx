@@ -6,7 +6,9 @@ import Modal from "../components/Modal"; // Assuming a Modal component exists
 import { motion } from "framer-motion"; // Import motion
 
 const OrderList: React.FC = () => {
-  const { orders, loading, error, updateOrder, removeOrder } = useOrders();
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>("all");
+  const [orderIdSearchTerm, setOrderIdSearchTerm] = useState<string>("");
+  const { orders, loading, error, updateOrder, removeOrder } = useOrders(paymentStatusFilter, orderIdSearchTerm);
   const [pendingStatus, setPendingStatus] = useState<{ [key: string]: string }>({});
   const [showModal, setShowModal] = useState<boolean>(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -51,6 +53,7 @@ const OrderList: React.FC = () => {
   if (error) return <div className="text-center text-lg text-red-500 mt-8">Error: {error}</div>;
 
   const orderStatusOptions = [
+    "all",
     "pending",
     "payment-done",
     "shipped",
@@ -66,6 +69,26 @@ const OrderList: React.FC = () => {
       transition={{ duration: 0.6 }}
     >
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Order Management</h1>
+      <div className="flex flex-wrap gap-4 mb-6">
+        <select
+          value={paymentStatusFilter}
+          onChange={(e) => setPaymentStatusFilter(e.target.value)}
+          className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+        >
+          {orderStatusOptions.map((status) => (
+            <option key={status} value={status}>
+              {status.charAt(0).toUpperCase() + status.slice(1).replace('-', ' ')}
+            </option>
+          ))}
+        </select>
+        <input
+          type="text"
+          placeholder="Search by Order ID..."
+          value={orderIdSearchTerm}
+          onChange={(e) => setOrderIdSearchTerm(e.target.value)}
+          className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 flex-grow"
+        />
+      </div>
       {orders.length === 0 ? (
         <p className="text-center text-gray-600 py-8">No orders found.</p>
       ) : (

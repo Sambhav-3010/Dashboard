@@ -36,16 +36,32 @@ export interface Order {
   emailSent?: boolean; // Add this line
 }
 
-export const fetchUsers = async (): Promise<User[]> => {
-  const response = await fetch(`${API_BASE_URL}/users`);
+export const fetchUsers = async (searchTerm: string = ""): Promise<User[]> => {
+  const url = searchTerm ? `${API_BASE_URL}/users?search=${encodeURIComponent(searchTerm)}` : `${API_BASE_URL}/users`;
+  const response = await fetch(url);
   if (!response.ok) {
     throw new Error("Failed to fetch users");
   }
   return response.json();
 };
 
-export const fetchOrders = async (): Promise<Order[]> => {
-  const response = await fetch(`${API_BASE_URL}/orders`);
+export const fetchOrders = async (paymentStatusFilter: string = "all", orderIdSearchTerm: string = ""): Promise<Order[]> => {
+  let url = `${API_BASE_URL}/orders`;
+  const queryParams: string[] = [];
+
+  if (paymentStatusFilter && paymentStatusFilter !== "all") {
+    queryParams.push(`status=${encodeURIComponent(paymentStatusFilter)}`);
+  }
+
+  if (orderIdSearchTerm) {
+    queryParams.push(`search=${encodeURIComponent(orderIdSearchTerm)}`);
+  }
+
+  if (queryParams.length > 0) {
+    url += `?${queryParams.join("&")}`;
+  }
+
+  const response = await fetch(url);
   if (!response.ok) {
     throw new Error("Failed to fetch orders");
   }
@@ -69,7 +85,7 @@ export const updateOrderStatus = async (
   return response.json();
 };
 
-export const deleteOrder = async (orderId: string): Promise<{ message: string }> => {
+export const deleteOrder = async (orderId: string): Promise<{ message: string, emailSent?: boolean }> => {
   const response = await fetch(`${API_BASE_URL}/orders/${orderId}`, {
     method: "DELETE",
   });

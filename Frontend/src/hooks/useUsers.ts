@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { fetchUsers, User } from "../services/api";
 
-export const useUsers = () => {
+export const useUsers = (searchTerm: string = "") => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -9,7 +9,7 @@ export const useUsers = () => {
   useEffect(() => {
     const getUsers = async () => {
       try {
-        const data = await fetchUsers();
+        const data = await fetchUsers(searchTerm);
         setUsers(data);
       } catch (err: any) {
         setError(err.message);
@@ -18,7 +18,7 @@ export const useUsers = () => {
       }
     };
     getUsers();
-  }, []);
+  }, [searchTerm]);
 
   return { users, loading, error };
 };
